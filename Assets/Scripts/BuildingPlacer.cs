@@ -9,10 +9,15 @@ public class BuildingPlacer : MonoBehaviour
 
     private float placementIndicatorUpdateRate = 0.05f;
     private float lastUpdateTime;
+    private float rotateSpeed = 500f;
     private Vector3 curPlacementPos;
-
-    public GameObject placementIndicator;
+    private GameObject placementIndicator;
+    public GameObject placementIndicatorFarm;
+    public GameObject placementIndicatorHouse;
+    public GameObject placementIndicatorRoad;
+    public GameObject placementIndicatorFactory;
     public static BuildingPlacer inst;
+
 
     void Awake()
     {
@@ -29,9 +34,13 @@ public class BuildingPlacer : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-            CancelBuildingPlacement();
+        if (Input.GetKeyDown(KeyCode.Escape)){
 
+            CancelBuildingPlacement();
+        }
+        if (Input.GetKeyDown(KeyCode.R)){
+            transform.rotation *= Quaternion.Euler(0, 90 * rotateSpeed * 0.002f, 0);
+        }       
         if (Time.time - lastUpdateTime > placementIndicatorUpdateRate && currentlyPlacing)
         {
             lastUpdateTime = Time.time;
@@ -48,11 +57,28 @@ public class BuildingPlacer : MonoBehaviour
 
     public void BeginNewBuildingPlacement(BuildingPreset buildingPreset)
     {
-        if (City.inst.money < buildingPreset.cost)
+        if (City.inst.money < buildingPreset.cost){
             return;
-
-        currentlyPlacing = true;
+        }
+        transform.rotation = new Quaternion(0, 0, 0, 0);
+        switch (buildingPreset.displayName)
+        {
+            case "Farm":
+                placementIndicator = placementIndicatorFarm;
+                break;
+            case "House":
+                placementIndicator = placementIndicatorHouse;
+                break;
+            case "Road":
+                placementIndicator = placementIndicatorRoad;
+                break;
+            case "Factory":
+                placementIndicator = placementIndicatorFactory;
+                break;
+        }    
+        
         curBuildingPreset = buildingPreset;
+        currentlyPlacing = true;
         placementIndicator.SetActive(true);
     }
     
@@ -64,7 +90,7 @@ public void CancelBuildingPlacement()
     
 void PlaceBuilding()
     {
-        GameObject buildingObj = Instantiate(curBuildingPreset.prefab, curPlacementPos, Quaternion.identity);
+        GameObject buildingObj = Instantiate(curBuildingPreset.prefab, curPlacementPos, transform.rotation);
         City.inst.OnPlaceBuilding(curBuildingPreset);
 
         CancelBuildingPlacement();
