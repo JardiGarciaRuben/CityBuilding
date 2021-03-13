@@ -10,12 +10,14 @@ public class BuildingPlacer : MonoBehaviour
     private float placementIndicatorUpdateRate = 0.05f;
     private float lastUpdateTime;
     private float rotateSpeed = 500f;
+    int[,] buildingMap = new int[50,50];
     private Vector3 curPlacementPos;
     private GameObject placementIndicator;
     public GameObject placementIndicatorFarm;
     public GameObject placementIndicatorHouse;
     public GameObject placementIndicatorRoad;
     public GameObject placementIndicatorFactory;
+    public GameObject placementIndicatorCube;
     public static BuildingPlacer inst;
 
 
@@ -34,10 +36,6 @@ public class BuildingPlacer : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape)){
-
-            CancelBuildingPlacement();
-        }
         if (Input.GetKeyDown(KeyCode.R)){
             transform.rotation *= Quaternion.Euler(0, 90 * rotateSpeed * 0.002f, 0);
         }       
@@ -53,6 +51,12 @@ public class BuildingPlacer : MonoBehaviour
         {
             PlaceBuilding();
         }
+        
+        if (currentlyPlacing && Input.GetMouseButtonDown(1))
+        {
+            CancelBuildingPlacement();
+        }
+            
     }
 
     public void BeginNewBuildingPlacement(BuildingPreset buildingPreset)
@@ -75,6 +79,9 @@ public class BuildingPlacer : MonoBehaviour
             case "Factory":
                 placementIndicator = placementIndicatorFactory;
                 break;
+            case "Cube":
+                placementIndicator = placementIndicatorCube;
+                break;
         }    
         
         curBuildingPreset = buildingPreset;
@@ -90,9 +97,10 @@ public void CancelBuildingPlacement()
     
 void PlaceBuilding()
     {
-        GameObject buildingObj = Instantiate(curBuildingPreset.prefab, curPlacementPos, transform.rotation);
-        City.inst.OnPlaceBuilding(curBuildingPreset);
-
-        CancelBuildingPlacement();
+        if(buildingMap[(int)curPlacementPos.x,(int)curPlacementPos.z] == 0){
+            GameObject buildingObj = Instantiate(curBuildingPreset.prefab, curPlacementPos, transform.rotation);
+            City.inst.OnPlaceBuilding(curBuildingPreset);
+            buildingMap[(int)curPlacementPos.x,(int)curPlacementPos.z] = 1;
+        }
     }
 }

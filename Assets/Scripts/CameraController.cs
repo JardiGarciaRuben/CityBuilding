@@ -9,7 +9,8 @@ public class CameraController : MonoBehaviour
     public float minXRot;
     public float maxXRot;
 
-    private float curXRot;
+    public float curXRot;
+    public float curYRot;
 
     public float minZoom;
     public float maxZoom;
@@ -24,7 +25,6 @@ public class CameraController : MonoBehaviour
     {
         cam = Camera.main;
         curZoom = cam.transform.localPosition.y;
-        curXRot = -50;
     }
 
     // Update is called once per frame
@@ -32,19 +32,37 @@ public class CameraController : MonoBehaviour
     {
         curZoom += Input.GetAxis("Mouse ScrollWheel") * -zoomSpeed;
         curZoom = Mathf.Clamp(curZoom, minZoom, maxZoom);
-        cam.transform.localPosition = Vector3.up * curZoom;
+        cam.transform.localPosition = Vector3.up * curZoom + Vector3.back * curZoom;
+        if(Input.GetKeyDown(KeyCode.R)){
+            float x = Input.GetAxis("Mouse X");
+            float y = Input.GetAxis("Mouse Y");
 
+            curXRot = -y * rotateSpeed;
+            curXRot = Mathf.Clamp(curXRot, minXRot, maxXRot);
+
+            transform.eulerAngles = new Vector3(curXRot, transform.eulerAngles.y + 90, 0.0f);
+        }
         if (Input.GetMouseButton(1))
         {
             float x = Input.GetAxis("Mouse X");
             float y = Input.GetAxis("Mouse Y");
-
-            curXRot += -y * rotateSpeed;
-            curXRot = Mathf.Clamp(curXRot, minXRot, maxXRot);
-
-            transform.eulerAngles = new Vector3(curXRot, transform.eulerAngles.y + (x * rotateSpeed), 0.0f);
+            curXRot += -x * rotateSpeed;
+            curYRot = cam.transform.eulerAngles.y;
+            Debug.Log(curYRot);
+            if (curYRot>= 0 && curYRot <= 90){
+                transform.position = new Vector3(transform.position.x - x , transform.position.y  , transform.position.z - y);
+                    Debug.Log(1);
+            } else if (curYRot>= 90 && curYRot < 180){
+                transform.position = new Vector3(transform.position.x - y, transform.position.y  , transform.position.z + x);
+                    Debug.Log(2);
+            } else if (curYRot>= 180 && curYRot< 270){
+                transform.position = new Vector3(transform.position.x + x , transform.position.y  , transform.position.z + y);
+                    Debug.Log(3);
+            } else if (curYRot>= 270 && curYRot<= 360){
+                transform.position = new Vector3(transform.position.x + y , transform.position.y  , transform.position.z - x);
+                    Debug.Log(4);
+            } 
         }
-
         Vector3 forward = cam.transform.forward;
         forward.y = 0.0f;
         forward.Normalize();
